@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "rollup -c --watch",
-    "build": "rollup -c",
-    "start": "node dist/index.js",
+    "start": "rollup -c",
     "lint": "npx eslint src"
   },
   "author": "ahmaddwi700@gmail.com",
