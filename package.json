@@ -12,6 +12,7 @@
     "@rollup/plugin-run": "^3.1.0",
     "@rollup/plugin-swc": "^0.4.0",
     "@swc/core": "^1.7.26",
+    "prettier": "3.3.3",
     "rollup": "^4.22.4"
   }
 }
