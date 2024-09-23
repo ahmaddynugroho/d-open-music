@@ -21,6 +21,8 @@
     "typescript-eslint": "^8.6.0"
   },
   "dependencies": {
+    "@hapi/hapi": "^21.3.10",
+    "@types/hapi": "^18.0.14",
     "dotenv": "^16.4.5"
   }
 }
