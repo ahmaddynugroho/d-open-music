@@ -1,5 +1,6 @@
 import { ServerRoute } from "@hapi/hapi";
 import { getRequestBody } from "../utils/hapi.ts";
+import { nanoid } from "nanoid";
 
 type postAlbumBody = {
   name: string;
@@ -11,12 +12,13 @@ const post: ServerRoute = {
   path: "/albums",
   handler: (request, h) => {
     const body = getRequestBody<postAlbumBody>(request);
+    const id = nanoid();
     console.log(body);
     return h
       .response({
         status: "success",
         data: {
-          albumId: "awikwok",
+          albumId: id,
         },
       })
       .code(201);
