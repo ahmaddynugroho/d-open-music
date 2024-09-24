@@ -1,6 +1,6 @@
 import { ServerRoute } from "@hapi/hapi";
 import { getRequestBody } from "../utils/hapi.ts";
-import { nanoid } from "nanoid";
+import { addAlbum } from "../db.ts";
 
 type postAlbumBody = {
   name: string;
@@ -10,18 +10,21 @@ type postAlbumBody = {
 const post: ServerRoute = {
   method: "POST",
   path: "/albums",
-  handler: (request, h) => {
-    const body = getRequestBody<postAlbumBody>(request);
-    const id = nanoid();
-    console.log(body);
-    return h
-      .response({
-        status: "success",
-        data: {
-          albumId: id,
-        },
-      })
-      .code(201);
+  handler: async (request, h) => {
+    try {
+      const { name, year } = getRequestBody<postAlbumBody>(request);
+      const returnedId = await addAlbum(name, year);
+      return h
+        .response({
+          status: "success",
+          data: {
+            albumId: returnedId,
+          },
+        })
+        .code(201);
+    } catch (error) {
+      console.error(error);
+    }
   },
 };
 
