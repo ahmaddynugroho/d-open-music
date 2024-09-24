@@ -1,24 +1,23 @@
 import { ServerRoute } from "@hapi/hapi";
-import { badPayloadResponse, getRequestBody } from "../utils/hapi.ts";
-import { addAlbum } from "../db.ts";
-import albumPayload from "../schemas/album.ts";
-
-type postAlbumBody = {
-  name: string;
-  year: number;
-};
+import {
+  badPayloadResponse,
+  getRequestBody,
+  getRequestParams,
+  notFoundResponse,
+  serverErrorResponse,
+} from "../utils/hapi.ts";
+import { addAlbum, getAlbum } from "../db.ts";
+import { Album, albumPayload } from "../schemas/album.ts";
 
 const post: ServerRoute = {
   method: "POST",
   path: "/albums",
   handler: async (request, h) => {
     try {
-      const { name, year } = getRequestBody<postAlbumBody>(request);
+      const { name, year } = getRequestBody<Album>(request);
 
       const { error } = albumPayload.validate({ name, year });
-      if (error) {
-        return badPayloadResponse(h, error.details[0].message);
-      }
+      if (error) return badPayloadResponse(h, error.details[0].message);
 
       const returnedId = await addAlbum(name, year);
 
@@ -32,8 +31,34 @@ const post: ServerRoute = {
         .code(201);
     } catch (error) {
       console.error(error);
+      return serverErrorResponse(h);
     }
   },
 };
 
-export default [post];
+const get: ServerRoute = {
+  method: "GET",
+  path: "/albums/{id}",
+  handler: async (request, h) => {
+    try {
+      const { id } = getRequestParams<{ id: string }>(request);
+      const album = await getAlbum(id);
+
+      if (album.rows.length === 0) return notFoundResponse(h);
+
+      return h
+        .response({
+          status: "success",
+          data: {
+            album: album.rows[0],
+          },
+        })
+        .code(200);
+    } catch (error) {
+      console.error(error);
+      return serverErrorResponse(h);
+    }
+  },
+};
+
+export default [post, get];

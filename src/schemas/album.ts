@@ -1,8 +1,11 @@
 import Joi from "joi";
 
-const albumPayload = Joi.object({
+export type Album = {
+  name: string;
+  year: number;
+};
+
+export const albumPayload = Joi.object({
   name: Joi.string().required(),
   year: Joi.number().required(),
 });
-
-export default albumPayload;
