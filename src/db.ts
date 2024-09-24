@@ -1,12 +1,12 @@
 import { nanoid } from "nanoid";
 import pg from "pg";
-const Client = pg.Client;
+const { Pool } = pg;
 
-const client = new Client();
+const pool = new Pool();
 
 export const addAlbum = async (name: string, year: number) => {
   const id = nanoid();
-  await client.connect();
+  const client = await pool.connect();
   await client.query(
     `
       INSERT INTO album (id, name, year)
@@ -14,6 +14,6 @@ export const addAlbum = async (name: string, year: number) => {
     `,
     [id, name, year],
   );
-  await client.end();
+  await client.release();
   return id;
 };
