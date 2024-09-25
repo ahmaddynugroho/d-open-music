@@ -45,3 +45,15 @@ export const putAlbum = async (id: string, name: string, year: number) => {
   );
   await client.release();
 };
+
+export const deleteAlbum = async (id: string) => {
+  const client = await pool.connect();
+  await client.query(
+    `
+      DELETE FROM album
+      WHERE id=$1
+    `,
+    [id],
+  );
+  await client.release();
+};

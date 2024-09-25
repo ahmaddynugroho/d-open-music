@@ -6,7 +6,7 @@ import {
   notFoundResponse,
   serverErrorResponse,
 } from "../utils/hapi.ts";
-import { addAlbum, getAlbum, putAlbum } from "../db.ts";
+import { addAlbum, deleteAlbum, getAlbum, putAlbum } from "../db.ts";
 import { Album, albumPayload } from "../schemas/album.ts";
 
 const post: ServerRoute = {
@@ -90,4 +90,29 @@ const put: ServerRoute = {
   },
 };
 
-export default [post, get, put];
+const deleteRoute: ServerRoute = {
+  method: "DELETE",
+  path: "/albums/{id}",
+  handler: async (request, h) => {
+    try {
+      const { id } = getRequestParams<{ id: string }>(request);
+      const album = await getAlbum(id);
+
+      if (album.rows.length === 0) return notFoundResponse(h);
+
+      await deleteAlbum(id);
+
+      return h
+        .response({
+          status: "success",
+          message: "updated",
+        })
+        .code(200);
+    } catch (error) {
+      console.error(error);
+      return serverErrorResponse(h);
+    }
+  },
+};
+
+export default [post, get, put, deleteRoute];
