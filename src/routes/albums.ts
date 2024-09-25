@@ -6,7 +6,7 @@ import {
   notFoundResponse,
   serverErrorResponse,
 } from "../utils/hapi.ts";
-import { addAlbum, getAlbum } from "../db.ts";
+import { addAlbum, getAlbum, putAlbum } from "../db.ts";
 import { Album, albumPayload } from "../schemas/album.ts";
 
 const post: ServerRoute = {
@@ -61,4 +61,33 @@ const get: ServerRoute = {
   },
 };
 
-export default [post, get];
+const put: ServerRoute = {
+  method: "PUT",
+  path: "/albums/{id}",
+  handler: async (request, h) => {
+    try {
+      const { name, year } = getRequestBody<Album>(request);
+      const { id } = getRequestParams<{ id: string }>(request);
+      const album = await getAlbum(id);
+
+      if (album.rows.length === 0) return notFoundResponse(h);
+
+      const { error } = albumPayload.validate({ name, year });
+      if (error) return badPayloadResponse(h, error.details[0].message);
+
+      await putAlbum(id, name, year);
+
+      return h
+        .response({
+          status: "success",
+          message: "updated",
+        })
+        .code(200);
+    } catch (error) {
+      console.error(error);
+      return serverErrorResponse(h);
+    }
+  },
+};
+
+export default [post, get, put];

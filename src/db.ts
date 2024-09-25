@@ -32,3 +32,16 @@ export const getAlbum = async (id: string) => {
   await client.release();
   return album;
 };
+
+export const putAlbum = async (id: string, name: string, year: number) => {
+  const client = await pool.connect();
+  await client.query(
+    `
+      UPDATE album
+      SET name=$1, year=$2
+      WHERE id=$3
+    `,
+    [name, year, id],
+  );
+  await client.release();
+};
