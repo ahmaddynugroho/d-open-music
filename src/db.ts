@@ -113,3 +113,15 @@ export const putSong = async (id: string, songBody: Song) => {
   );
   await client.release();
 };
+
+export const deleteSong = async (id: string) => {
+  const client = await pool.connect();
+  await client.query(
+    `
+      DELETE FROM song
+      WHERE id=$1
+    `,
+    [id],
+  );
+  await client.release();
+};

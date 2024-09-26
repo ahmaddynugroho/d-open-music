@@ -10,6 +10,7 @@ import {
   addAlbum,
   addSong,
   deleteAlbum,
+  deleteSong,
   getAlbum,
   getAllSong,
   getSong,
@@ -124,35 +125,29 @@ const putRoute: ServerRoute = {
   },
 };
 
-// const deleteRoute: ServerRoute = {
-//   method: "DELETE",
-//   path: "/albums/{id}",
-//   handler: async (request, h) => {
-//     try {
-//       const { id } = getRequestParams<{ id: string }>(request);
-//       const album = await getAlbum(id);
+const deleteRoute: ServerRoute = {
+  method: "DELETE",
+  path: "/songs/{id}",
+  handler: async (request, h) => {
+    try {
+      const { id } = getRequestParams<{ id: string }>(request);
+      const album = await getSong(id);
 
-//       if (album.rows.length === 0) return notFoundResponse(h);
+      if (album.rows.length === 0) return notFoundResponse(h);
 
-//       await deleteAlbum(id);
+      await deleteSong(id);
 
-//       return h
-//         .response({
-//           status: "success",
-//           message: "updated",
-//         })
-//         .code(200);
-//     } catch (error) {
-//       console.error(error);
-//       return serverErrorResponse(h);
-//     }
-//   },
-// };
+      return h
+        .response({
+          status: "success",
+          message: "updated",
+        })
+        .code(200);
+    } catch (error) {
+      console.error(error);
+      return serverErrorResponse(h);
+    }
+  },
+};
 
-export default [
-  postRoute,
-  getAllRoute,
-  getRoute,
-  putRoute,
-  // deleteRoute
-];
+export default [postRoute, getAllRoute, getRoute, putRoute, deleteRoute];
