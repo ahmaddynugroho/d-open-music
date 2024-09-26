@@ -99,3 +99,17 @@ export const getSong = async (id: string) => {
   await client.release();
   return song;
 };
+
+export const putSong = async (id: string, songBody: Song) => {
+  const { title, year, performer, genre, duration, albumId } = songBody;
+  const client = await pool.connect();
+  await client.query(
+    `
+      UPDATE song
+      SET title=$2, year=$3, performer=$4, genre=$5, duration=$6, album_id=$7
+      WHERE id=$1
+    `,
+    [id, title, year, performer, genre, duration, albumId],
+  );
+  await client.release();
+};

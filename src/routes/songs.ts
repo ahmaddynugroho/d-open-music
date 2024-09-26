@@ -14,6 +14,7 @@ import {
   getAllSong,
   getSong,
   putAlbum,
+  putSong,
 } from "../db.ts";
 import { Album, albumPayload } from "../schemas/album.ts";
 import { Song, songPayload } from "../schemas/song.ts";
@@ -94,34 +95,34 @@ const getRoute: ServerRoute = {
   },
 };
 
-// const putRoute: ServerRoute = {
-//   method: "PUT",
-//   path: "/albums/{id}",
-//   handler: async (request, h) => {
-//     try {
-//       const { name, year } = getRequestBody<Album>(request);
-//       const { id } = getRequestParams<{ id: string }>(request);
-//       const album = await getAlbum(id);
+const putRoute: ServerRoute = {
+  method: "PUT",
+  path: "/songs/{id}",
+  handler: async (request, h) => {
+    try {
+      const songBody = getRequestBody<Song>(request);
+      const { id } = getRequestParams<{ id: string }>(request);
+      const song = await getSong(id);
 
-//       if (album.rows.length === 0) return notFoundResponse(h);
+      if (song.rows.length === 0) return notFoundResponse(h);
 
-//       const { error } = albumPayload.validate({ name, year });
-//       if (error) return badPayloadResponse(h, error.details[0].message);
+      const { error } = songPayload.validate(songBody);
+      if (error) return badPayloadResponse(h, error.details[0].message);
 
-//       await putAlbum(id, name, year);
+      await putSong(id, songBody);
 
-//       return h
-//         .response({
-//           status: "success",
-//           message: "updated",
-//         })
-//         .code(200);
-//     } catch (error) {
-//       console.error(error);
-//       return serverErrorResponse(h);
-//     }
-//   },
-// };
+      return h
+        .response({
+          status: "success",
+          message: "updated",
+        })
+        .code(200);
+    } catch (error) {
+      console.error(error);
+      return serverErrorResponse(h);
+    }
+  },
+};
 
 // const deleteRoute: ServerRoute = {
 //   method: "DELETE",
@@ -152,6 +153,6 @@ export default [
   postRoute,
   getAllRoute,
   getRoute,
-  // putRoute,
+  putRoute,
   // deleteRoute
 ];
