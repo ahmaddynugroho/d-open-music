@@ -29,6 +29,12 @@ exports.up = (pgm) => {
     },
     album_id: {
       type: "text",
+      references: "album",
+      onDelete: "CASCADE",
     },
   });
+};
+
+exports.down = (pgm) => {
+  pgm.dropTable("song");
 };
