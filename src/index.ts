@@ -1,5 +1,7 @@
 import "dotenv/config";
 import Hapi from "@hapi/hapi";
+import routes from "./routes/index.ts";
+import "./db.ts";
 
 const init = async () => {
   const server = Hapi.server({
@@ -7,13 +9,7 @@ const init = async () => {
     host: process.env.HOST,
   });
 
-  server.route({
-    method: "GET",
-    path: "/",
-    handler: () => {
-      return "Hello World!";
-    },
-  });
+  server.route(routes);
 
   await server.start();
   console.log("Server running on %s", server.info.uri);
