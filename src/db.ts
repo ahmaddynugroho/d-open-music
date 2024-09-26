@@ -85,3 +85,17 @@ export const getAllSong = async () => {
   await client.release();
   return res;
 };
+
+export const getSong = async (id: string) => {
+  const client = await pool.connect();
+  const song: pg.QueryResult<Song> = await client.query(
+    `
+      SELECT *
+      FROM song
+      WHERE id=$1
+    `,
+    [id],
+  );
+  await client.release();
+  return song;
+};

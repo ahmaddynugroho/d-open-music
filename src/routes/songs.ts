@@ -12,6 +12,7 @@ import {
   deleteAlbum,
   getAlbum,
   getAllSong,
+  getSong,
   putAlbum,
 } from "../db.ts";
 import { Album, albumPayload } from "../schemas/album.ts";
@@ -70,19 +71,19 @@ const getAllRoute: ServerRoute = {
 
 const getRoute: ServerRoute = {
   method: "GET",
-  path: "/albums/{id}",
+  path: "/songs/{id}",
   handler: async (request, h) => {
     try {
       const { id } = getRequestParams<{ id: string }>(request);
-      const album = await getAlbum(id);
+      const song = await getSong(id);
 
-      if (album.rows.length === 0) return notFoundResponse(h);
+      if (song.rows.length === 0) return notFoundResponse(h);
 
       return h
         .response({
           status: "success",
           data: {
-            album: album.rows[0],
+            song: song.rows[0],
           },
         })
         .code(200);
@@ -150,7 +151,7 @@ const getRoute: ServerRoute = {
 export default [
   postRoute,
   getAllRoute,
-  // getRoute,
+  getRoute,
   // putRoute,
   // deleteRoute
 ];
