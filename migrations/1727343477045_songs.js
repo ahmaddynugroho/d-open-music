@@ -1,7 +1,17 @@
 /* global exports */
 
+/**
+ * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
+ */
+exports.shorthands = undefined;
+
+/**
+ * @param pgm {import('node-pg-migrate').MigrationBuilder}
+ * @param run {() => void | undefined}
+ * @returns {Promise<void> | void}
+ */
 exports.up = (pgm) => {
-  pgm.createTable("song", {
+  pgm.createTable("songs", {
     id: {
       type: "varchar(21)",
       unique: true,
@@ -29,12 +39,17 @@ exports.up = (pgm) => {
     },
     album_id: {
       type: "text",
-      references: "album",
+      references: "albums",
       onDelete: "CASCADE",
     },
   });
 };
 
+/**
+ * @param pgm {import('node-pg-migrate').MigrationBuilder}
+ * @param run {() => void | undefined}
+ * @returns {Promise<void> | void}
+ */
 exports.down = (pgm) => {
-  pgm.dropTable("song");
+  pgm.dropTable("songs");
 };

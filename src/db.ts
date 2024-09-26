@@ -11,7 +11,7 @@ export const addAlbum = async (name: string, year: number) => {
   const client = await pool.connect();
   await client.query(
     `
-      INSERT INTO album (id, name, year)
+      INSERT INTO albums (id, name, year)
       VALUES ($1, $2, $3)
     `,
     [id, name, year],
@@ -25,7 +25,7 @@ export const getAlbum = async (id: string) => {
   const album: pg.QueryResult<Album> = await client.query(
     `
       SELECT *
-      FROM album
+      FROM albums
       WHERE id=$1
     `,
     [id],
@@ -38,7 +38,7 @@ export const putAlbum = async (id: string, name: string, year: number) => {
   const client = await pool.connect();
   await client.query(
     `
-      UPDATE album
+      UPDATE albums
       SET name=$1, year=$2
       WHERE id=$3
     `,
@@ -51,7 +51,7 @@ export const deleteAlbum = async (id: string) => {
   const client = await pool.connect();
   await client.query(
     `
-      DELETE FROM album
+      DELETE FROM albums
       WHERE id=$1
     `,
     [id],
@@ -65,7 +65,7 @@ export const addSong = async (songBody: Song) => {
   const client = await pool.connect();
   await client.query(
     `
-      INSERT INTO song (id, title, year, performer, genre, duration, album_id)
+      INSERT INTO songs (id, title, year, performer, genre, duration, album_id)
       VALUES ($1, $2, $3, $4, $5, $6, $7)
     `,
     [id, title, year, performer, genre, duration, albumId],
@@ -79,7 +79,7 @@ export const getAllSong = async () => {
   const res = await client.query(
     `
       SELECT id, title, performer
-      FROM song
+      FROM songs
     `,
   );
   await client.release();
@@ -91,7 +91,7 @@ export const getSong = async (id: string) => {
   const song: pg.QueryResult<Song> = await client.query(
     `
       SELECT *
-      FROM song
+      FROM songs
       WHERE id=$1
     `,
     [id],
@@ -105,7 +105,7 @@ export const putSong = async (id: string, songBody: Song) => {
   const client = await pool.connect();
   await client.query(
     `
-      UPDATE song
+      UPDATE songs
       SET title=$2, year=$3, performer=$4, genre=$5, duration=$6, album_id=$7
       WHERE id=$1
     `,
@@ -118,7 +118,7 @@ export const deleteSong = async (id: string) => {
   const client = await pool.connect();
   await client.query(
     `
-      DELETE FROM song
+      DELETE FROM songs
       WHERE id=$1
     `,
     [id],
