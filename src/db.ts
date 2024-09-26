@@ -1,6 +1,7 @@
 import { nanoid } from "nanoid";
 import pg from "pg";
 import { Album } from "./schemas/album.ts";
+import { Song } from "./schemas/song.ts";
 const { Pool } = pg;
 
 const pool = new Pool();
@@ -56,4 +57,31 @@ export const deleteAlbum = async (id: string) => {
     [id],
   );
   await client.release();
+};
+
+export const addSong = async (songBody: Song) => {
+  const { title, year, performer, genre, duration, albumId } = songBody;
+  const id = nanoid();
+  const client = await pool.connect();
+  await client.query(
+    `
+      INSERT INTO song (id, title, year, performer, genre, duration, album_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `,
+    [id, title, year, performer, genre, duration, albumId],
+  );
+  await client.release();
+  return id;
+};
+
+export const getAllSong = async () => {
+  const client = await pool.connect();
+  const res = await client.query(
+    `
+      SELECT id, title, performer
+      FROM song
+    `,
+  );
+  await client.release();
+  return res;
 };
