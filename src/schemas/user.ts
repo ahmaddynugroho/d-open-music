@@ -11,3 +11,8 @@ export const userPayload = Joi.object({
   password: Joi.string().required(),
   fullname: Joi.string().required(),
 });
+
+export const userLoginPayload = Joi.object({
+  username: Joi.string().required(),
+  password: Joi.string().required(),
+});

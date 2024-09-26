@@ -140,6 +140,7 @@ export const addUser = async (userBody: User) => {
     `,
     [id, username, passwordHash, fullname],
   );
+  await client.release();
   return id;
 };
 
@@ -154,5 +155,20 @@ export const checkUserUsername = async (userBody: User) => {
     `,
     [username],
   );
+  await client.release();
   return usernames;
+};
+
+export const getUserId = async (username: string) => {
+  const client = await pool.connect();
+  const user = await client.query<{ id: string; password: string }>(
+    `
+      SELECT id, password
+      FROM users
+      WHERE username=$1
+    `,
+    [username],
+  );
+  await client.release();
+  return user;
 };
