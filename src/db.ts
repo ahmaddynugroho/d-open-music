@@ -1,7 +1,9 @@
 import { nanoid } from "nanoid";
 import pg from "pg";
+import bcrypt from "bcrypt";
 import { Album } from "./schemas/album.ts";
 import { Song } from "./schemas/song.ts";
+import { User } from "./schemas/user.ts";
 const { Pool } = pg;
 
 const pool = new Pool();
@@ -124,4 +126,33 @@ export const deleteSong = async (id: string) => {
     [id],
   );
   await client.release();
+};
+
+export const addUser = async (userBody: User) => {
+  const id = nanoid();
+  const { username, password, fullname } = userBody;
+  const passwordHash = await bcrypt.hash(password, 10);
+  const client = await pool.connect();
+  await client.query(
+    `
+      INSERT INTO users (id, username, password, fullname)
+      VALUES ($1, $2, $3, $4)
+    `,
+    [id, username, passwordHash, fullname],
+  );
+  return id;
+};
+
+export const checkUserUsername = async (userBody: User) => {
+  const { username } = userBody;
+  const client = await pool.connect();
+  const usernames = await client.query(
+    `
+      SELECT username
+      FROM users
+      WHERE username=$1
+    `,
+    [username],
+  );
+  return usernames;
 };

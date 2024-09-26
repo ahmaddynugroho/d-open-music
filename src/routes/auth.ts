@@ -1,5 +1,11 @@
 import { ServerRoute } from "@hapi/hapi";
-import { getRequestBody, serverErrorResponse } from "../utils/hapi.ts";
+import {
+  badPayloadResponse,
+  getRequestBody,
+  serverErrorResponse,
+} from "../utils/hapi.ts";
+import { User, userPayload } from "../schemas/user.ts";
+import { addUser, checkUserUsername } from "../db.ts";
 
 export default [
   {
@@ -7,10 +13,15 @@ export default [
     path: "/users",
     handler: async (request, h) => {
       try {
-        const userBody = await getRequestBody(request);
-        console.log(userBody);
+        const userBody = await getRequestBody<User>(request);
+        const { error } = userPayload.validate(userBody);
+        if (error) return badPayloadResponse(h, error.details[0].message);
+        const usernames = await checkUserUsername(userBody);
+        console.log(usernames);
+        if (usernames.rows.length > 0)
+          return badPayloadResponse(h, "username is taken");
 
-        const userId = "user_id";
+        const userId = await addUser(userBody);
 
         return h
           .response({
