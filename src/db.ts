@@ -4,44 +4,6 @@ const { Pool } = pg;
 
 export const pool = new Pool();
 
-export const addRefreshToken = async (refreshToken: string) => {
-  const client = await pool.connect();
-  await client.query(
-    `
-      INSERT INTO authentications (token)
-      VALUES ($1)
-    `,
-    [refreshToken],
-  );
-  await client.release();
-};
-
-export const deleteRefreshToken = async (refreshToken: string) => {
-  const client = await pool.connect();
-  await client.query(
-    `
-      DELETE FROM authentications
-      WHERE token=$1
-    `,
-    [refreshToken],
-  );
-  await client.release();
-};
-
-export const getRefreshToken = async (refreshToken: string) => {
-  const client = await pool.connect();
-  const res = await client.query(
-    `
-      SELECT token
-      FROM authentications
-      WHERE token=$1
-    `,
-    [refreshToken],
-  );
-  await client.release();
-  return res;
-};
-
 export const addPlaylist = async (name: string, userId: string) => {
   const id = nanoid();
   const client = await pool.connect();

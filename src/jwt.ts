@@ -1,6 +1,6 @@
 import "dotenv/config";
 import Jwt, { HapiJwt } from "@hapi/jwt";
-import { addRefreshToken, getRefreshToken } from "./db.ts";
+import { addRefreshToken, getRefreshToken } from "./database/jwt.ts";
 
 export const generateAccessToken = (userId) => {
   return Jwt.token.generate(

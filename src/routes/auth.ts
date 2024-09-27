@@ -13,7 +13,7 @@ import {
   generateRefreshToken,
   verifyRefreshToken,
 } from "../jwt.ts";
-import { deleteRefreshToken } from "../db.ts";
+import { deleteRefreshToken } from "../database/jwt.ts";
 
 export default [
   {
