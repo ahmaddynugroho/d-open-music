@@ -6,18 +6,14 @@ import {
   failedLoginResponse,
 } from "../utils/hapi.ts";
 import { User, userLoginPayload, userPayload } from "../schemas/user.ts";
-import {
-  addUser,
-  checkUserUsername,
-  deleteRefreshToken,
-  getUserId,
-} from "../db.ts";
+import { addUser, checkUserUsername, getUserId } from "../database/users.ts";
 import { compare } from "bcrypt";
 import {
   generateAccessToken,
   generateRefreshToken,
   verifyRefreshToken,
 } from "../jwt.ts";
+import { deleteRefreshToken } from "../db.ts";
 
 export default [
   {
