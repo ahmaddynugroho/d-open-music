@@ -16,9 +16,9 @@ import {
   getAllPlaylists,
   getPlaylist,
   getPlaylistSongs,
-  getSong,
   validatePlaylistUser,
-} from "../db.ts";
+} from "../database/playlists.ts";
+import { getSong } from "../database/songs.ts";
 
 const playlists: ServerRoute[] = [
   {

@@ -6,7 +6,12 @@ import {
   notFoundResponse,
   serverErrorResponse,
 } from "../utils/hapi.ts";
-import { addAlbum, deleteAlbum, getAlbum, putAlbum } from "../db.ts";
+import {
+  addAlbum,
+  deleteAlbum,
+  getAlbum,
+  putAlbum,
+} from "../database/albums.ts";
 import { Album, albumPayload } from "../schemas/album.ts";
 
 const post: ServerRoute = {
