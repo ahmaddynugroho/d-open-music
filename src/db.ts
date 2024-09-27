@@ -210,3 +210,17 @@ export const getRefreshToken = async (refreshToken: string) => {
   await client.release();
   return res;
 };
+
+export const addPlaylist = async (name: string, userId: string) => {
+  const id = nanoid();
+  const client = await pool.connect();
+  await client.query(
+    `
+      INSERT INTO playlists (id, name, owner)
+      VALUES ($1, $2, $3)
+    `,
+    [id, name, userId],
+  );
+  await client.release();
+  return id;
+};
