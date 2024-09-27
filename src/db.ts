@@ -263,9 +263,39 @@ export const validatePlaylistUser = async (
     `
 SELECT name
 FROM playlists
-WHERE name=$1 AND owner=$2
+WHERE id=$1 AND owner=$2
     `,
     [playlistId, userId],
+  );
+  await client.release();
+  return res;
+};
+
+export const getPlaylist = async (playlistId: string) => {
+  const client = await pool.connect();
+  const res = await client.query(
+    `
+SELECT playlists.id, playlists.name, users.username
+FROM playlists
+JOIN users ON playlists.owner=users.id
+WHERE playlists.id=$1
+    `,
+    [playlistId],
+  );
+  await client.release();
+  return res;
+};
+
+export const getPlaylistSongs = async (playlistId: string) => {
+  const client = await pool.connect();
+  const res = client.query(
+    `--sql
+SELECT songs.id, songs.title, songs.performer
+FROM songs
+JOIN playlist_songs ON playlist_songs.song_id=songs.id
+WHERE playlist_songs.playlist_id=$1
+    `,
+    [playlistId],
   );
   await client.release();
   return res;

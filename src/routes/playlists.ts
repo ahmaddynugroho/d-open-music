@@ -12,6 +12,8 @@ import {
   addPlaylist,
   addSongToPlaylist,
   getAllPlaylists,
+  getPlaylist,
+  getPlaylistSongs,
   getSong,
   validatePlaylistUser,
 } from "../db.ts";
@@ -120,6 +122,38 @@ const playlists: ServerRoute[] = [
             },
           })
           .code(201);
+      } catch (error) {
+        console.log(error);
+        return serverErrorResponse(h);
+      }
+    },
+  },
+  {
+    method: "GET",
+    path: "/playlists/{id}/songs",
+    options: { auth: "open-music-jwt" },
+    handler: async (request, h) => {
+      try {
+        const artifacts = request.auth.artifacts as {
+          decoded: { payload: { userId: string } };
+        };
+        const userId = artifacts.decoded.payload.userId;
+        const playlistParam = getRequestParams<{ id: string }>(request);
+        const isValidUser = await validatePlaylistUser(
+          playlistParam.id,
+          userId,
+        );
+        if (isValidUser.rows.length === 0) return forbiddenResponse(h);
+
+        return h.response({
+          status: "success",
+          data: {
+            playlist: {
+              ...(await getPlaylist(playlistParam.id)).rows[0],
+              songs: (await getPlaylistSongs(playlistParam.id)).rows,
+            },
+          },
+        });
       } catch (error) {
         console.log(error);
         return serverErrorResponse(h);
