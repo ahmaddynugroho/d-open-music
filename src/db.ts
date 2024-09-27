@@ -239,3 +239,34 @@ WHERE owner=$1
   await client.release();
   return res;
 };
+
+export const addSongToPlaylist = async (playlistId: string, songId: string) => {
+  const id = nanoid();
+  const client = await pool.connect();
+  await client.query(
+    `
+INSERT INTO playlist_songs (id, playlist_id, song_id)
+VALUES ($1, $2, $3)
+    `,
+    [id, playlistId, songId],
+  );
+  await client.release();
+  return id;
+};
+
+export const validatePlaylistUser = async (
+  playlistId: string,
+  userId: string,
+) => {
+  const client = await pool.connect();
+  const res = await client.query(
+    `
+SELECT name
+FROM playlists
+WHERE name=$1 AND owner=$2
+    `,
+    [playlistId, userId],
+  );
+  await client.release();
+  return res;
+};

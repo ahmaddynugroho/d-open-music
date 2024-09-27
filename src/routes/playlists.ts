@@ -1,11 +1,20 @@
 import { ServerRoute } from "@hapi/hapi";
 import {
   badPayloadResponse,
+  forbiddenResponse,
   getRequestBody,
+  getRequestParams,
+  notFoundResponse,
   serverErrorResponse,
 } from "../utils/hapi.ts";
-import { playlistPayload } from "../schemas/playlist.ts";
-import { addPlaylist, getAllPlaylists } from "../db.ts";
+import { playlistPayload, playlistSongPayload } from "../schemas/playlist.ts";
+import {
+  addPlaylist,
+  addSongToPlaylist,
+  getAllPlaylists,
+  getSong,
+  validatePlaylistUser,
+} from "../db.ts";
 
 const playlists: ServerRoute[] = [
   {
@@ -62,6 +71,55 @@ const playlists: ServerRoute[] = [
             playlists: playlists.rows,
           },
         });
+      } catch (error) {
+        console.log(error);
+        return serverErrorResponse(h);
+      }
+    },
+  },
+  {
+    method: "POST",
+    path: "/playlists/{id}/songs",
+    options: { auth: "open-music-jwt" },
+    handler: async (request, h) => {
+      try {
+        const playlistSongParam = await getRequestParams<{ id: string }>(
+          request,
+        );
+        const playlistSongBody = await getRequestBody<{ songId: string }>(
+          request,
+        );
+        const { error } = playlistSongPayload.validate(playlistSongBody);
+        if (error) return badPayloadResponse(h);
+
+        const song = await getSong(playlistSongBody.songId);
+        if (song.rows.length === 0) return notFoundResponse(h);
+
+        const artifacts = request.auth.artifacts as {
+          decoded: { payload: { userId: string } };
+        };
+        const userId = artifacts.decoded.payload.userId;
+
+        const isValidUser = await validatePlaylistUser(
+          playlistSongParam.id,
+          userId,
+        );
+        if (isValidUser.rows.length === 0) return forbiddenResponse(h);
+
+        const playlistSongId = await addSongToPlaylist(
+          playlistSongParam.id,
+          playlistSongBody.songId,
+        );
+
+        return h
+          .response({
+            status: "success",
+            message: "inserted",
+            data: {
+              playlistSongId: playlistSongId,
+            },
+          })
+          .code(201);
       } catch (error) {
         console.log(error);
         return serverErrorResponse(h);
