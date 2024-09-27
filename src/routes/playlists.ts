@@ -11,6 +11,7 @@ import { playlistPayload, playlistSongPayload } from "../schemas/playlist.ts";
 import {
   addPlaylist,
   addSongToPlaylist,
+  deletePlaylistSong,
   getAllPlaylists,
   getPlaylist,
   getPlaylistSongs,
@@ -153,6 +154,41 @@ const playlists: ServerRoute[] = [
               songs: (await getPlaylistSongs(playlistParam.id)).rows,
             },
           },
+        });
+      } catch (error) {
+        console.log(error);
+        return serverErrorResponse(h);
+      }
+    },
+  },
+  {
+    method: "delete",
+    path: "/playlists/{id}/songs",
+    options: { auth: "open-music-jwt" },
+    handler: async (request, h) => {
+      try {
+        const playlistSongBody = await getRequestBody<{ songId: string }>(
+          request,
+        );
+        const { error } = playlistSongPayload.validate(playlistSongBody);
+        if (error) return badPayloadResponse(h);
+
+        const artifacts = request.auth.artifacts as {
+          decoded: { payload: { userId: string } };
+        };
+        const userId = artifacts.decoded.payload.userId;
+        const playlistParam = getRequestParams<{ id: string }>(request);
+        const isValidUser = await validatePlaylistUser(
+          playlistParam.id,
+          userId,
+        );
+        if (isValidUser.rows.length === 0) return forbiddenResponse(h);
+
+        await deletePlaylistSong(playlistSongBody.songId);
+
+        return h.response({
+          status: "success",
+          message: "deleted",
         });
       } catch (error) {
         console.log(error);

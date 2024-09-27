@@ -300,3 +300,15 @@ WHERE playlist_songs.playlist_id=$1
   await client.release();
   return res;
 };
+
+export const deletePlaylistSong = async (songId: string) => {
+  const client = await pool.connect();
+  await client.query(
+    `--sql
+DELETE FROM playlist_songs
+WHERE song_id=$1
+    `,
+    [songId],
+  );
+  await client.release();
+};
