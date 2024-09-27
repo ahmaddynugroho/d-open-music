@@ -40,3 +40,27 @@ export function serverErrorResponse(h: ResponseToolkit<ReqRefDefaults>) {
     })
     .code(500);
 }
+
+export function failedLoginResponse(
+  h: ResponseToolkit<ReqRefDefaults>,
+  errorMessage?: string,
+) {
+  return h
+    .response({
+      status: "fail",
+      message: errorMessage ?? "not found",
+    })
+    .code(401);
+}
+
+export function forbiddenResponse(
+  h: ResponseToolkit<ReqRefDefaults>,
+  errorMessage?: string,
+) {
+  return h
+    .response({
+      status: "fail",
+      message: errorMessage ?? "forbidden",
+    })
+    .code(403);
+}
