@@ -11,6 +11,7 @@ import { playlistPayload, playlistSongPayload } from "../schemas/playlist.ts";
 import {
   addPlaylist,
   addSongToPlaylist,
+  deletePlaylist,
   deletePlaylistSong,
   getAllPlaylists,
   getPlaylist,
@@ -140,6 +141,10 @@ const playlists: ServerRoute[] = [
         };
         const userId = artifacts.decoded.payload.userId;
         const playlistParam = getRequestParams<{ id: string }>(request);
+
+        const isPlaylistExist = await getPlaylist(playlistParam.id);
+        if (isPlaylistExist.rows.length === 0) return notFoundResponse(h);
+
         const isValidUser = await validatePlaylistUser(
           playlistParam.id,
           userId,
@@ -185,6 +190,35 @@ const playlists: ServerRoute[] = [
         if (isValidUser.rows.length === 0) return forbiddenResponse(h);
 
         await deletePlaylistSong(playlistSongBody.songId);
+
+        return h.response({
+          status: "success",
+          message: "deleted",
+        });
+      } catch (error) {
+        console.log(error);
+        return serverErrorResponse(h);
+      }
+    },
+  },
+  {
+    method: "delete",
+    path: "/playlists/{id}",
+    options: { auth: "open-music-jwt" },
+    handler: async (request, h) => {
+      try {
+        const artifacts = request.auth.artifacts as {
+          decoded: { payload: { userId: string } };
+        };
+        const userId = artifacts.decoded.payload.userId;
+        const playlistParam = getRequestParams<{ id: string }>(request);
+        const isValidUser = await validatePlaylistUser(
+          playlistParam.id,
+          userId,
+        );
+        if (isValidUser.rows.length === 0) return forbiddenResponse(h);
+
+        await deletePlaylist(playlistParam.id);
 
         return h.response({
           status: "success",
