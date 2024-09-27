@@ -5,7 +5,7 @@ import {
   serverErrorResponse,
 } from "../utils/hapi.ts";
 import { playlistPayload } from "../schemas/playlist.ts";
-import { addPlaylist } from "../db.ts";
+import { addPlaylist, getAllPlaylists } from "../db.ts";
 
 const playlists: ServerRoute[] = [
   {
@@ -35,6 +35,33 @@ const playlists: ServerRoute[] = [
             },
           })
           .code(201);
+      } catch (error) {
+        console.log(error);
+        return serverErrorResponse(h);
+      }
+    },
+  },
+  {
+    method: "GET",
+    path: "/playlists",
+    options: { auth: "open-music-jwt" },
+    handler: async (request, h) => {
+      try {
+        const artifacts = request.auth.artifacts.decoded as {
+          payload: {
+            userId: string;
+          };
+        };
+
+        const userId = artifacts.payload.userId;
+        const playlists = await getAllPlaylists(userId);
+
+        return h.response({
+          status: "success",
+          data: {
+            playlists: playlists.rows,
+          },
+        });
       } catch (error) {
         console.log(error);
         return serverErrorResponse(h);

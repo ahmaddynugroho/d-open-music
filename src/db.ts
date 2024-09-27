@@ -224,3 +224,18 @@ export const addPlaylist = async (name: string, userId: string) => {
   await client.release();
   return id;
 };
+
+export const getAllPlaylists = async (userId: string) => {
+  const client = await pool.connect();
+  const res = client.query(
+    `
+SELECT playlists.id, playlists.name, users.username
+FROM playlists
+JOIN users ON playlists.owner=users.id
+WHERE owner=$1
+    `,
+    [userId],
+  );
+  await client.release();
+  return res;
+};
