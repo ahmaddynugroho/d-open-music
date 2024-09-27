@@ -6,8 +6,13 @@ import {
   failedLoginResponse,
 } from "../utils/hapi.ts";
 import { User, userLoginPayload, userPayload } from "../schemas/user.ts";
-import { addUser, checkUserUsername, getUserId } from "../db.ts";
-import { compare, hash } from "bcrypt";
+import {
+  addUser,
+  checkUserUsername,
+  deleteRefreshToken,
+  getUserId,
+} from "../db.ts";
+import { compare } from "bcrypt";
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -66,7 +71,7 @@ export default [
           return failedLoginResponse(h, "wrong password dawg");
 
         const accessToken = generateAccessToken(user.rows[0].id);
-        const refreshToken = generateRefreshToken(user.rows[0].id);
+        const refreshToken = await generateRefreshToken(user.rows[0].id);
 
         return h
           .response({
@@ -86,14 +91,14 @@ export default [
   {
     method: "PUT",
     path: "/authentications",
-    handler: (request, h) => {
+    handler: async (request, h) => {
       try {
         const { refreshToken } = getRequestBody<{ refreshToken: string }>(
           request,
         );
         if (!refreshToken) return badPayloadResponse(h, "no refresh token");
 
-        const verification = verifyRefreshToken(refreshToken);
+        const verification = await verifyRefreshToken(refreshToken);
         if (!verification.isValid)
           return h
             .response({
@@ -109,6 +114,37 @@ export default [
           data: {
             accessToken: newAccessToken,
           },
+        });
+      } catch (error) {
+        console.log(error);
+        return serverErrorResponse(h);
+      }
+    },
+  },
+  {
+    method: "DELETE",
+    path: "/authentications",
+    handler: async (request, h) => {
+      try {
+        const { refreshToken } = getRequestBody<{ refreshToken: string }>(
+          request,
+        );
+        if (!refreshToken) return badPayloadResponse(h, "no refresh token");
+
+        const verification = await verifyRefreshToken(refreshToken);
+        if (!verification.isValid)
+          return h
+            .response({
+              status: "fail",
+              message: "unverified refresh token",
+            })
+            .code(400);
+
+        await deleteRefreshToken(refreshToken);
+
+        return h.response({
+          status: "success",
+          message: "deleted",
         });
       } catch (error) {
         console.log(error);
