@@ -8,7 +8,11 @@ import {
 import { User, userLoginPayload, userPayload } from "../schemas/user.ts";
 import { addUser, checkUserUsername, getUserId } from "../db.ts";
 import { compare, hash } from "bcrypt";
-import { generateAccessToken, generateRefreshToken } from "../jwt.ts";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from "../jwt.ts";
 
 export default [
   {
@@ -53,9 +57,8 @@ export default [
 
         if (user.rows.length === 0)
           return failedLoginResponse(h, "user not found");
-        const passwordHash = await hash(userBody.password, 10);
         const isPasswordCorrect = await compare(
-          passwordHash,
+          userBody.password,
           user.rows[0].password,
         );
 
@@ -74,6 +77,39 @@ export default [
             },
           })
           .code(201);
+      } catch (error) {
+        console.log(error);
+        return serverErrorResponse(h);
+      }
+    },
+  },
+  {
+    method: "PUT",
+    path: "/authentications",
+    handler: (request, h) => {
+      try {
+        const { refreshToken } = getRequestBody<{ refreshToken: string }>(
+          request,
+        );
+        if (!refreshToken) return badPayloadResponse(h, "no refresh token");
+
+        const verification = verifyRefreshToken(refreshToken);
+        if (!verification.isValid)
+          return h
+            .response({
+              status: "fail",
+              message: "unverified refresh token",
+            })
+            .code(400);
+
+        const newAccessToken = generateAccessToken(verification.userId);
+
+        return h.response({
+          status: "success",
+          data: {
+            accessToken: newAccessToken,
+          },
+        });
       } catch (error) {
         console.log(error);
         return serverErrorResponse(h);
