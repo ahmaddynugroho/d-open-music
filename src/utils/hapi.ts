@@ -1,4 +1,5 @@
 import { ReqRefDefaults, Request, ResponseToolkit } from "@hapi/hapi";
+import { Readable } from "stream";
 
 export function getRequestBody<T>(request: Request<ReqRefDefaults>): T {
   return Object.assign({}, request.payload) as T;
@@ -64,3 +65,12 @@ export function forbiddenResponse(
     })
     .code(403);
 }
+
+export type HapiReadableStream = Readable & {
+  hapi: {
+    filename: string;
+    headers: {
+      "content-type": string;
+    };
+  };
+};

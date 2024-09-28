@@ -1,6 +1,7 @@
 import "dotenv/config";
 import Hapi from "@hapi/hapi";
 import Jwt from "@hapi/jwt";
+import Inert from "@hapi/inert";
 import routes from "./routes/index.ts";
 import "./db.ts";
 
@@ -10,7 +11,7 @@ const init = async () => {
     host: process.env.HOST,
   });
 
-  await server.register(Jwt);
+  await server.register([{ plugin: Jwt }, { plugin: Inert }]);
 
   server.auth.strategy("open-music-jwt", "jwt", {
     keys: process.env.ACCESS_TOKEN_KEY,

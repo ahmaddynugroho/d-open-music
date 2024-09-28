@@ -9,25 +9,24 @@ exports.shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 exports.up = (pgm) => {
-  pgm.createTable("users", {
+  pgm.createTable("user_album_likes", {
     id: {
       type: "varchar(21)",
       notNull: true,
       primaryKey: true,
       unique: true,
     },
-    username: {
-      type: "text",
-      unique: true,
+    user_id: {
+      type: "varchar(21)",
       notNull: true,
+      references: "users",
+      onDelete: "CASCADE",
     },
-    password: {
-      type: "text",
+    album_id: {
+      type: "varchar(21)",
       notNull: true,
-    },
-    fullname: {
-      type: "text",
-      notNull: true,
+      references: "albums",
+      onDelete: "CASCADE",
     },
   });
 };
@@ -38,5 +37,5 @@ exports.up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 exports.down = (pgm) => {
-  pgm.dropTable("users");
+  pgm.dropTable("user_album_likes");
 };

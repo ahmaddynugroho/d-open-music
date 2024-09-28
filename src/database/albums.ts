@@ -55,3 +55,69 @@ export const deleteAlbum = async (id: string) => {
   );
   await client.release();
 };
+
+export const addCover = async (albumId: string, path: string) => {
+  const client = await pool.connect();
+  await client.query(
+    `--sql
+update albums
+set cover_url=$1
+where id=$2
+    `,
+    [path, albumId],
+  );
+  await client.release();
+};
+
+export const likeAlbum = async (userId: string, albumId: string) => {
+  const id = nanoid();
+  const client = await pool.connect();
+  await client.query(
+    `
+INSERT INTO user_album_likes (id, user_id, album_id)
+VALUES ($1, $2, $3)
+    `,
+    [id, userId, albumId],
+  );
+  await client.release();
+};
+
+export const getLikedAlbum = async (userId: string) => {
+  const client = await pool.connect();
+  const res = await client.query(
+    `
+SELECT *
+FROM user_album_likes
+WHERE user_id=$1
+    `,
+    [userId],
+  );
+  await client.release();
+  return res;
+};
+
+export const countAlbumLikes = async (albumId: string) => {
+  const client = await pool.connect();
+  const res = await client.query(
+    `
+SELECT COUNT(*)
+FROM user_album_likes
+WHERE album_id=$1
+    `,
+    [albumId],
+  );
+  await client.release();
+  return res;
+};
+
+export const unlikeAlbum = async (userId: string) => {
+  const client = await pool.connect();
+  await client.query(
+    `
+DELETE FROM user_album_likes
+WHERE user_id=$1
+    `,
+    [userId],
+  );
+  await client.release();
+};

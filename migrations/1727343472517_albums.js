@@ -1,5 +1,3 @@
-/* global exports */
-
 /**
  * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
  */
@@ -25,6 +23,9 @@ exports.up = (pgm) => {
     year: {
       type: "integer",
       notNull: true,
+    },
+    cover_url: {
+      type: "text",
     },
   });
 };
