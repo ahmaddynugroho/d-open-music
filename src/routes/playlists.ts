@@ -262,13 +262,15 @@ const playlists: ServerRoute[] = [
         );
         if (isValidUser.rows.length === 0) return forbiddenResponse(h);
 
+        const playlistDetail = (await getPlaylist(playlistParam.id)).rows[0];
         await sendAmqpMessage(
           "export:playlist",
           JSON.stringify({
             targetEmail: body.targetEmail,
             content: {
               playlist: {
-                ...(await getPlaylist(playlistParam.id)).rows[0],
+                id: playlistDetail.id,
+                name: playlistDetail.name,
                 songs: (await getPlaylistSongs(playlistParam.id)).rows,
               },
             },

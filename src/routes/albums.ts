@@ -60,7 +60,10 @@ const get: ServerRoute = {
       const album = await getAlbum(id);
 
       if (album.rows.length === 0) return notFoundResponse(h);
-      const { id: albumId, name, year, cover_url: coverUrl } = album.rows[0];
+      const { id: albumId, name, year, cover_url } = album.rows[0];
+      const coverUrl = cover_url
+        ? `http://${process.env.HOST}:${process.env.PORT}/uploads/` + cover_url
+        : null;
 
       return h
         .response({
@@ -70,8 +73,7 @@ const get: ServerRoute = {
               id: albumId,
               name,
               year,
-              coverUrl:
-                `${process.env.HOST}:${process.env.PORT}/uploads/` + coverUrl,
+              coverUrl,
             },
           },
         })
