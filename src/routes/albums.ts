@@ -22,6 +22,7 @@ import {
 } from "../database/albums.ts";
 import { Album, albumPayload } from "../schemas/album.ts";
 import { ResponseToolkit } from "@hapi/hapi";
+import { deleteRedisCache, getRedisCache, setRedisCache } from "../redis.ts";
 
 const post: ServerRoute = {
   method: "POST",
@@ -217,6 +218,9 @@ const likeRoute: ServerRoute = {
   handler: async (request, h) => {
     try {
       const { id } = getRequestParams<{ id: string }>(request);
+
+      await deleteRedisCache(`likecount:${id}`);
+
       const album = await getAlbum(id);
 
       if (album.rows.length === 0) return notFoundResponse(h);
@@ -256,7 +260,20 @@ const getLikeRoute: ServerRoute = {
     try {
       const { id } = getRequestParams<{ id: string }>(request);
 
+      const cache = await getRedisCache(`likecount:${id}`);
+      if (cache) {
+        return h
+          .response({
+            status: "success",
+            data: {
+              likes: Number(cache),
+            },
+          })
+          .header("X-Data-Source", "cache");
+      }
+
       const likeCount = (await countAlbumLikes(id)).rows[0].count;
+      await setRedisCache(`likecount:${id}`, likeCount);
       return h.response({
         status: "success",
         data: {
