@@ -95,3 +95,17 @@ WHERE user_id=$1
   await client.release();
   return res;
 };
+
+export const countAlbumLikes = async (albumId: string) => {
+  const client = await pool.connect();
+  const res = await client.query(
+    `
+SELECT COUNT(*)
+FROM user_album_likes
+WHERE album_id=$1
+    `,
+    [albumId],
+  );
+  await client.release();
+  return res;
+};

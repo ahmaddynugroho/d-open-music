@@ -12,6 +12,7 @@ import {
 import {
   addAlbum,
   addCover,
+  countAlbumLikes,
   deleteAlbum,
   getAlbum,
   getLikedAlbum,
@@ -247,4 +248,34 @@ const likeRoute: ServerRoute = {
   },
 };
 
-export default [post, get, put, deleteRoute, postCovers, uploads, likeRoute];
+const getLikeRoute: ServerRoute = {
+  method: "get",
+  path: "/albums/{id}/likes",
+  handler: async (request, h) => {
+    try {
+      const { id } = getRequestParams<{ id: string }>(request);
+
+      const likeCount = (await countAlbumLikes(id)).rows[0].count;
+      return h.response({
+        status: "success",
+        data: {
+          likes: Number(likeCount),
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      return serverErrorResponse(h);
+    }
+  },
+};
+
+export default [
+  post,
+  get,
+  put,
+  deleteRoute,
+  postCovers,
+  uploads,
+  likeRoute,
+  getLikeRoute,
+];
