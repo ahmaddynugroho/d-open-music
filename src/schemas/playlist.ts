@@ -7,3 +7,7 @@ export const playlistPayload = Joi.object({
 export const playlistSongPayload = Joi.object({
   songId: Joi.string().required(),
 });
+
+export const exportPlaylistPayload = Joi.object({
+  targetEmail: Joi.string().required(),
+});

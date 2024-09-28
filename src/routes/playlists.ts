@@ -7,7 +7,11 @@ import {
   notFoundResponse,
   serverErrorResponse,
 } from "../utils/hapi.ts";
-import { playlistPayload, playlistSongPayload } from "../schemas/playlist.ts";
+import {
+  exportPlaylistPayload,
+  playlistPayload,
+  playlistSongPayload,
+} from "../schemas/playlist.ts";
 import {
   addPlaylist,
   addSongToPlaylist,
@@ -19,6 +23,7 @@ import {
   validatePlaylistUser,
 } from "../database/playlists.ts";
 import { getSong } from "../database/songs.ts";
+import { sendAmqpMessage } from "../amqp.ts";
 
 const playlists: ServerRoute[] = [
   {
@@ -224,6 +229,47 @@ const playlists: ServerRoute[] = [
           status: "success",
           message: "deleted",
         });
+      } catch (error) {
+        console.log(error);
+        return serverErrorResponse(h);
+      }
+    },
+  },
+  {
+    method: "post",
+    path: "/export/playlists/{id}",
+    options: { auth: "open-music-jwt" },
+    handler: async (request, h) => {
+      try {
+        const body = await getRequestBody<{ name: string }>(request);
+        const { error } = exportPlaylistPayload.validate(body);
+        if (error) return badPayloadResponse(h);
+
+        const playlistParam = getRequestParams<{ id: string }>(request);
+        const isPlaylistExist = await getPlaylist(playlistParam.id);
+        if (isPlaylistExist.rows.length === 0) return notFoundResponse(h);
+
+        const artifacts = request.auth.artifacts.decoded as {
+          payload: {
+            userId: string;
+          };
+        };
+
+        const userId = artifacts.payload.userId;
+        const isValidUser = await validatePlaylistUser(
+          playlistParam.id,
+          userId,
+        );
+        if (isValidUser.rows.length === 0) return forbiddenResponse(h);
+
+        await sendAmqpMessage("export:playlist", "awikwok");
+
+        return h
+          .response({
+            status: "success",
+            message: "sent to queue",
+          })
+          .code(201);
       } catch (error) {
         console.log(error);
         return serverErrorResponse(h);
