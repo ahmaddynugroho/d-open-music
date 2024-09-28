@@ -1,18 +1,23 @@
-import { ServerRoute } from "@hapi/hapi";
+import path from "path";
+import fs from "fs";
+import { ReqRefDefaults, ServerRoute } from "@hapi/hapi";
 import {
   badPayloadResponse,
   getRequestBody,
   getRequestParams,
+  HapiReadableStream,
   notFoundResponse,
   serverErrorResponse,
 } from "../utils/hapi.ts";
 import {
   addAlbum,
+  addCover,
   deleteAlbum,
   getAlbum,
   putAlbum,
 } from "../database/albums.ts";
 import { Album, albumPayload } from "../schemas/album.ts";
+import { ResponseToolkit } from "@hapi/hapi";
 
 const post: ServerRoute = {
   method: "POST",
@@ -50,12 +55,19 @@ const get: ServerRoute = {
       const album = await getAlbum(id);
 
       if (album.rows.length === 0) return notFoundResponse(h);
+      const { id: albumId, name, year, cover_url: coverUrl } = album.rows[0];
 
       return h
         .response({
           status: "success",
           data: {
-            album: album.rows[0],
+            album: {
+              id: albumId,
+              name,
+              year,
+              coverUrl:
+                `${process.env.HOST}:${process.env.PORT}/uploads/` + coverUrl,
+            },
           },
         })
         .code(200);
@@ -120,4 +132,78 @@ const deleteRoute: ServerRoute = {
   },
 };
 
-export default [post, get, put, deleteRoute];
+const postCovers: ServerRoute = {
+  method: "post",
+  path: "/albums/{id}/covers",
+  options: {
+    payload: {
+      output: "stream",
+      allow: "multipart/form-data",
+      multipart: true,
+      maxBytes: 512000,
+    },
+  },
+  handler: async (request, h) => {
+    try {
+      const { id } = getRequestParams<{ id: string }>(request);
+      const { cover } = request.payload as { cover: HapiReadableStream };
+      const allowedMimeType = ["image/png", "image/jpg"];
+      const mimeType = cover.hapi.headers["content-type"];
+      if (!allowedMimeType.includes(mimeType)) {
+        return h
+          .response({
+            status: "fail",
+            message: "unsupported image. use png/jpg",
+          })
+          .code(400);
+      }
+
+      const filename =
+        Date.now().toString() + "_" + cover.hapi.filename.replace(/ /g, "_");
+      const directory = path.resolve(process.cwd(), "uploads");
+      if (!fs.existsSync(directory)) {
+        fs.mkdirSync(directory);
+      }
+      const location = `${directory}/${filename}`;
+      const writableStream = fs.createWriteStream(location);
+
+      const result = await new Promise((resolve, reject) => {
+        writableStream.on("error", () => reject("error saving file"));
+        cover.pipe(writableStream);
+        cover.on("end", () => resolve(location));
+      });
+
+      console.log(result);
+      await addCover(id, filename);
+      return h
+        .response({
+          status: "success",
+          message: "berhasil upload",
+        })
+        .code(201);
+    } catch (error) {
+      console.error(error);
+      return serverErrorResponse(h);
+    }
+  },
+};
+
+const uploads: ServerRoute = {
+  method: "get",
+  path: "/uploads/{filename}",
+  handler: (
+    request,
+    h: ResponseToolkit<ReqRefDefaults> & { file: (location: string) => void },
+  ) => {
+    try {
+      const { filename } = getRequestParams<{ filename: string }>(request);
+      const location = process.cwd() + "/uploads/" + filename;
+      return h.file(location);
+    } catch (error) {
+      console.error(error);
+      return serverErrorResponse(h);
+    }
+  },
+};
+
+export default [post, get, put, deleteRoute, postCovers, uploads];

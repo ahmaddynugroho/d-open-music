@@ -55,3 +55,16 @@ export const deleteAlbum = async (id: string) => {
   );
   await client.release();
 };
+
+export const addCover = async (albumId: string, path: string) => {
+  const client = await pool.connect();
+  await client.query(
+    `--sql
+update albums
+set cover_url=$1
+where id=$2
+    `,
+    [path, albumId],
+  );
+  await client.release();
+};
