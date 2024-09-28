@@ -1,5 +1,3 @@
-/* global exports */
-
 /**
  * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
  */

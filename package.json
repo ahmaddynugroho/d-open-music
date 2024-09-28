@@ -3,14 +3,17 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "rollup -c --watch",
+    "dev:consumer": "rollup -c rollup.config.mjs --watch",
     "start": "rollup -c",
+    "start:consumer": "rollup -c rollup.config.mjs",
     "lint": "npx eslint src",
+    "lint:consumer": "npx eslint src-consumer",
     "migrate": "node-pg-migrate"
   },
   "author": "ahmaddwi700@gmail.com",
   "license": "ISC",
   "devDependencies": {
-    "@eslint/js": "^9.11.0",
+    "@eslint/js": "^9.11.1",
     "@rollup/plugin-run": "^3.1.0",
     "@rollup/plugin-swc": "^0.4.0",
     "@swc/core": "^1.7.26",
@@ -19,12 +22,13 @@
     "@types/hapi": "^18.0.14",
     "@types/hapi__jwt": "^2.0.5",
     "@types/pg": "^8.11.10",
-    "eslint": "^9.11.0",
+    "eslint": "^9.11.1",
+    "globals": "^15.9.0",
     "node-pg-migrate": "^7.6.1",
     "prettier": "3.3.3",
     "rollup": "^4.22.4",
     "typescript": "^5.5.4",
-    "typescript-eslint": "^8.6.0"
+    "typescript-eslint": "^8.7.0"
   },
   "dependencies": {
     "@hapi/hapi": "^21.3.10",
