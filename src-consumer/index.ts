@@ -47,7 +47,8 @@ amqp.connect(process.env.RABBITMQ_SERVER, function (error0, connection) {
     channel.consume(
       queue,
       async (msg) => {
-        const res = await send("me@me.me", msg.content.toString());
+        const { targetEmail, content } = JSON.parse(msg.content.toString());
+        const res = await send(targetEmail, JSON.stringify(content));
         console.log(res);
 
         // transport.sendMail(msg.content.toString(), () => {

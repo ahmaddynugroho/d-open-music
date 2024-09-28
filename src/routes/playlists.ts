@@ -241,13 +241,13 @@ const playlists: ServerRoute[] = [
     options: { auth: "open-music-jwt" },
     handler: async (request, h) => {
       try {
-        const body = await getRequestBody<{ name: string }>(request);
+        const body = await getRequestBody<{ targetEmail: string }>(request);
         const { error } = exportPlaylistPayload.validate(body);
         if (error) return badPayloadResponse(h);
 
         const playlistParam = getRequestParams<{ id: string }>(request);
-        const isPlaylistExist = await getPlaylist(playlistParam.id);
-        if (isPlaylistExist.rows.length === 0) return notFoundResponse(h);
+        const playlist = await getPlaylist(playlistParam.id);
+        if (playlist.rows.length === 0) return notFoundResponse(h);
 
         const artifacts = request.auth.artifacts.decoded as {
           payload: {
@@ -262,7 +262,18 @@ const playlists: ServerRoute[] = [
         );
         if (isValidUser.rows.length === 0) return forbiddenResponse(h);
 
-        await sendAmqpMessage("export:playlist", "awikwok");
+        await sendAmqpMessage(
+          "export:playlist",
+          JSON.stringify({
+            targetEmail: body.targetEmail,
+            content: {
+              playlist: {
+                ...(await getPlaylist(playlistParam.id)).rows[0],
+                songs: (await getPlaylistSongs(playlistParam.id)).rows,
+              },
+            },
+          }),
+        );
 
         return h
           .response({
