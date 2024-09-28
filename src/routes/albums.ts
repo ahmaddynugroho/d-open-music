@@ -18,6 +18,7 @@ import {
   getLikedAlbum,
   likeAlbum,
   putAlbum,
+  unlikeAlbum,
 } from "../database/albums.ts";
 import { Album, albumPayload } from "../schemas/album.ts";
 import { ResponseToolkit } from "@hapi/hapi";
@@ -269,6 +270,35 @@ const getLikeRoute: ServerRoute = {
   },
 };
 
+const unlikeRoute: ServerRoute = {
+  method: "delete",
+  path: "/albums/{id}/likes",
+  options: { auth: "open-music-jwt" },
+  handler: async (request, h) => {
+    try {
+      const { id } = getRequestParams<{ id: string }>(request);
+      const album = await getAlbum(id);
+
+      if (album.rows.length === 0) return notFoundResponse(h);
+
+      const decoded = request.auth.artifacts.decoded as {
+        payload: { userId: string };
+      };
+      const userId = decoded.payload.userId;
+
+      await unlikeAlbum(userId);
+
+      return h.response({
+        status: "success",
+        message: "liked",
+      });
+    } catch (error) {
+      console.error(error);
+      return serverErrorResponse(h);
+    }
+  },
+};
+
 export default [
   post,
   get,
@@ -278,4 +308,5 @@ export default [
   uploads,
   likeRoute,
   getLikeRoute,
+  unlikeRoute,
 ];

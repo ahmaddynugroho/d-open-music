@@ -109,3 +109,15 @@ WHERE album_id=$1
   await client.release();
   return res;
 };
+
+export const unlikeAlbum = async (userId: string) => {
+  const client = await pool.connect();
+  await client.query(
+    `
+DELETE FROM user_album_likes
+WHERE user_id=$1
+    `,
+    [userId],
+  );
+  await client.release();
+};
