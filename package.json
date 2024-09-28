@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "rollup -c --watch",
-    "dev:consumer": "rollup -c rollup.config.mjs --watch",
+    "dev:consumer": "rollup -c rollup.consumer.config.mjs --watch",
     "start": "rollup -c",
-    "start:consumer": "rollup -c rollup.config.mjs",
+    "start:consumer": "rollup -c rollup.consumer.config.mjs",
     "lint": "npx eslint src",
     "lint:consumer": "npx eslint src-consumer",
     "migrate": "node-pg-migrate"
@@ -21,6 +21,7 @@
     "@types/eslint__js": "^8.42.3",
     "@types/hapi": "^18.0.14",
     "@types/hapi__jwt": "^2.0.5",
+    "@types/nodemailer": "^6.4.16",
     "@types/pg": "^8.11.10",
     "eslint": "^9.11.1",
     "globals": "^15.9.0",
@@ -39,6 +40,7 @@
     "dotenv": "^16.4.5",
     "joi": "^17.13.3",
     "nanoid": "^5.0.7",
+    "nodemailer": "^6.9.15",
     "pg": "^8.13.0",
     "redis": "^4.7.0"
   }
