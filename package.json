@@ -3,11 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "rollup -c --watch",
-    "dev:consumer": "rollup -c rollup.consumer.config.mjs --watch",
     "start": "rollup -c",
-    "start:consumer": "rollup -c rollup.consumer.config.mjs",
     "lint": "npx eslint src",
-    "lint:consumer": "npx eslint src-consumer",
     "migrate": "node-pg-migrate"
   },
   "author": "ahmaddwi700@gmail.com",
