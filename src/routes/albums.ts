@@ -14,6 +14,8 @@ import {
   addCover,
   deleteAlbum,
   getAlbum,
+  getLikedAlbum,
+  likeAlbum,
   putAlbum,
 } from "../database/albums.ts";
 import { Album, albumPayload } from "../schemas/album.ts";
@@ -206,4 +208,43 @@ const uploads: ServerRoute = {
   },
 };
 
-export default [post, get, put, deleteRoute, postCovers, uploads];
+const likeRoute: ServerRoute = {
+  method: "post",
+  path: "/albums/{id}/likes",
+  options: { auth: "open-music-jwt" },
+  handler: async (request, h) => {
+    try {
+      const { id } = getRequestParams<{ id: string }>(request);
+      const album = await getAlbum(id);
+
+      if (album.rows.length === 0) return notFoundResponse(h);
+
+      const decoded = request.auth.artifacts.decoded as {
+        payload: { userId: string };
+      };
+      const userId = decoded.payload.userId;
+
+      const likedAlbum = await getLikedAlbum(userId);
+      if (likedAlbum.rows.length > 0)
+        return h
+          .response({
+            status: "fail",
+            message: "already liked",
+          })
+          .code(400);
+
+      await likeAlbum(userId, id);
+      return h
+        .response({
+          status: "success",
+          message: "liked",
+        })
+        .code(201);
+    } catch (error) {
+      console.error(error);
+      return serverErrorResponse(h);
+    }
+  },
+};
+
+export default [post, get, put, deleteRoute, postCovers, uploads, likeRoute];

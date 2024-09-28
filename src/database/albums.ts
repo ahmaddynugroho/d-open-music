@@ -68,3 +68,30 @@ where id=$2
   );
   await client.release();
 };
+
+export const likeAlbum = async (userId: string, albumId: string) => {
+  const id = nanoid();
+  const client = await pool.connect();
+  await client.query(
+    `
+INSERT INTO user_album_likes (id, user_id, album_id)
+VALUES ($1, $2, $3)
+    `,
+    [id, userId, albumId],
+  );
+  await client.release();
+};
+
+export const getLikedAlbum = async (userId: string) => {
+  const client = await pool.connect();
+  const res = await client.query(
+    `
+SELECT *
+FROM user_album_likes
+WHERE user_id=$1
+    `,
+    [userId],
+  );
+  await client.release();
+  return res;
+};
