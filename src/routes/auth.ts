@@ -25,7 +25,6 @@ export default [
         const { error } = userPayload.validate(userBody);
         if (error) return badPayloadResponse(h, error.details[0].message);
         const usernames = await checkUserUsername(userBody);
-        console.log(usernames);
         if (usernames.rows.length > 0)
           return badPayloadResponse(h, "username is taken");
 

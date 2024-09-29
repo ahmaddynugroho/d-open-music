@@ -174,13 +174,12 @@ const postCovers: ServerRoute = {
       const location = `${directory}/${filename}`;
       const writableStream = fs.createWriteStream(location);
 
-      const result = await new Promise((resolve, reject) => {
+      await new Promise((resolve, reject) => {
         writableStream.on("error", () => reject("error saving file"));
         cover.pipe(writableStream);
         cover.on("end", () => resolve(location));
       });
 
-      console.log(result);
       await addCover(id, filename);
       return h
         .response({
