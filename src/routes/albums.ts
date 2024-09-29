@@ -298,6 +298,8 @@ const unlikeRoute: ServerRoute = {
       const { id } = getRequestParams<{ id: string }>(request);
       const album = await getAlbum(id);
 
+      await deleteRedisCache(`likecount:${id}`);
+
       if (album.rows.length === 0) return notFoundResponse(h);
 
       const decoded = request.auth.artifacts.decoded as {
@@ -309,7 +311,7 @@ const unlikeRoute: ServerRoute = {
 
       return h.response({
         status: "success",
-        message: "liked",
+        message: "unliked",
       });
     } catch (error) {
       console.error(error);
